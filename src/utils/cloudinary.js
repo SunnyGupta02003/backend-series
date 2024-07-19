@@ -31,3 +31,5 @@ const uploadCloudinary = async (file) => {
         return null;
     }
 }
+
+export {uploadCloudinary}; // Export the function to be used in other files
