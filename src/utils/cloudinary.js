@@ -22,7 +22,8 @@ const uploadCloudinary = async (file) => {
         })
 
 
-        console.log("file uploaded successfully to cloudinary", response); // Log the response from cloudinary
+        console.log("file uploaded successfully to cloudinary", response.url); // Log the response from cloudinary
+        fs.unlinkSync(file); // Delete the file from the server after uploading it to cloudinary
         return response;
     }catch(error){
         

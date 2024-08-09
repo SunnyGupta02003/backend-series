@@ -7,13 +7,15 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const registerUser=asyncHandler(async (req, res)=>{
     //get user detail from frontend
     const {username, email, password, fullName} =req.body;
-    console.log(username)
+
+    console.log(req.body)
     //validate user detail
     if(
         [username, email, password, fullName ].some((feild)=>feild?.trim()==="")
     ){
         throw new ApiError(400, "All fields are required")
     }
+
     //check if user already exist by username or email
     const existUser= await User.findOne(
         {
@@ -26,15 +28,33 @@ const registerUser=asyncHandler(async (req, res)=>{
     }
     //check for image or avatar
     const avatarLocalPath=req.files?.avatar[0]?.path;
-    const coverImageLocalPath=req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath=req.files?.coverImage[0]?.path;
+
+    let coverImageLocalPath;
+
+    
+
+    if(req.files &&  Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0 ){
+        coverImageLocalPath=req.files.coverImage[0].path
+    }
+
+
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar is required")
     }
 
+    console.log(coverImageLocalPath)
+
     // upload image to cloudinary
     const avatar=await uploadCloudinary(avatarLocalPath)
     const coverImage=await uploadCloudinary(coverImageLocalPath)
+
+    console.log(coverImage);
+
+    console.log("----------------------");  
+    
+    
 
     if(!avatar){
         throw new ApiError(500, "Error uploading avatar")
@@ -46,8 +66,8 @@ const registerUser=asyncHandler(async (req, res)=>{
         email,
         password,
         fullName,
-        avatar: avatar.secure_url,
-        coverImage: coverImage.secure_url,
+        avatar: avatar.url,
+        coverImage: coverImage?.url || "",
 
     })
 
@@ -59,6 +79,7 @@ const registerUser=asyncHandler(async (req, res)=>{
     if(!createdUser){
         throw new ApiError(500, "Error creating user (Server error)")
     }
+    console.log(createdUser)
 
     // return success message
     return res.status(201).json(
