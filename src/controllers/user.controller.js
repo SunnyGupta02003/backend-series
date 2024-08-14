@@ -26,6 +26,8 @@ const generateAccessAndResfreshToken=async (userId)=>{
 const registerUser=asyncHandler(async (req, res)=>{
     //get user detail from frontend
     const {username, email, password, fullName} =req.body;
+    // console.log("fullName", fullName,);
+    
 
     console.log(req.body)
     //validate user detail
@@ -108,9 +110,9 @@ const registerUser=asyncHandler(async (req, res)=>{
 
 })
 
-const loginUser=asyncHandler(async(res, req)=>{
+const loginUser=asyncHandler(async(req, res)=>{
 
-    console.log("---------------------");
+    // console.log("---------------------");
     
     // get user => req.body
     const {email, username, password}=req.body;
@@ -121,18 +123,21 @@ const loginUser=asyncHandler(async(res, req)=>{
     if(!email && !username){
         throw new ApiError(400, "Username or email is required")
     }
+
+    
     //find the user by email or username
     const user=await User.findOne({ 
         $or: [{email}, {username}]
     })
-
+    
+    // console.log("---------------------");
     //check if user exist
     if(!user){
         throw new ApiError(404, "User not found");
     }
 
     //check if password is correct
-    const isPasswordCorrect=await User.isPasswordCorrect(password);
+    const isPasswordCorrect=await user.isPasswordCorrect(password);
 
     if(!isPasswordCorrect){
         throw new ApiError(401, "invalid password")
