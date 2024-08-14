@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import jwt from "jsonwebtoken";
 
 
 const generateAccessAndResfreshToken=async (userId)=>{
@@ -108,10 +109,16 @@ const registerUser=asyncHandler(async (req, res)=>{
 })
 
 const loginUser=asyncHandler(async(res, req)=>{
+
+    console.log("---------------------");
+    
     // get user => req.body
     const {email, username, password}=req.body;
+    // const {email, username, password}=req.body;
+    console.log(req.body);
+    
     // username or email is required
-    if(!email || !username){
+    if(!email && !username){
         throw new ApiError(400, "Username or email is required")
     }
     //find the user by email or username
