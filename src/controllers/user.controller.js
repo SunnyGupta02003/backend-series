@@ -361,6 +361,75 @@ const updateUserCoverImage=asyncHandler(async(req, res)=>{
         new ApiResponse(200, user, "Avatar updated successfully")
     )
 })
+
+const getUserProfileChannel=asyncHandler(async(req, res)=>{
+    const {username}=req.params;
+
+    if(!username?.trim()){
+        throw new ApiError(400, "Username is required")
+    }
+
+    const chennal=await User.aggregate([
+        {
+            $match:{
+                username: username?.toLowerCase()
+            },
+            
+        },
+        {
+            $lookup:{
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from: "Subscription",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribeTo"
+            }
+        },
+        {
+            $addFields:{
+                subscriberCount:{
+                    $size: "$subscribers"
+                },
+
+                channelSubscribedToCount:{
+                    $size: "$subscribeTo"
+                },
+                isSuscribed:{
+                    $cond:{
+                        if:{
+                            $in: [req.user._id, "$subscribers.subscriber"]
+                        },
+                        then: true,
+                        else: false
+                        
+                    }
+                
+                }
+            }
+        },
+        {
+            $project:{
+                fullName: 1,
+                username: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                channelSubscribedToCount: 1,
+                isSuscribed: 1,
+                email: 1,
+
+            }
+        }
+    ])
+
+})
     
 export {
     registerUser,
@@ -372,5 +441,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
+    getUserProfileChannel,
 
 }
